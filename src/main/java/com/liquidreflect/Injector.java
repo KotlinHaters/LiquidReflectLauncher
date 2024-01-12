@@ -40,102 +40,23 @@ public class Injector {
     public static void inject(Stage stage, Logger logger){
         File client = null;
 
-        if(System.getProperty("liquidreflect.client.path") == null){
-            String owner = "KotlinHaters";
-            String repo = "LiquidReflect";
-            try {
-                logger.info("Fetching client...");
-                MainApp.progressBar2.setProgress(0.1);
+        try {
+            File clientJar = new File(System.getenv("USERPROFILE") + File.separator + ".liquidreflect" + File.separator + "builds" + File.separator + "LiquidReflect" + ".jar");
 
-                MainApp.progressBar2.setVisible(true);
+            new File(System.getenv("USERPROFILE") + File.separator + ".liquidreflect" + File.separator + "builds").mkdir();
+            MainApp.progressBar1.setProgress(0.1);
 
-                String info = HttpUtil.getFromURL(new URL("https://api.github.com/repos/" + owner + "/" + repo + "/actions/workflows"));
-                MainApp.progressBar2.setProgress(0.4);
+            JarFile zipFile = new JarFile(new File("client-release.zip"));
 
-                JsonObject object = JsonParser.parseString(info).getAsJsonObject().get("workflows").getAsJsonArray().get(0).getAsJsonObject();
+            byte[] sb = readInputStream(zipFile.getInputStream(new JarEntry("LiquidReflect-Build-jar-with-dependencies.jar")));
 
-                String wf = HttpUtil.getFromURL(new URL("https://api.github.com/repos/"+owner+"/"+repo+"/actions/workflows/"+object.get("id").getAsString()+"/runs"));
-                MainApp.progressBar2.setProgress(0.7);
+            FileOutputStream fos = new FileOutputStream(clientJar);
+            fos.write(sb);
+            fos.close();
 
-                JsonObject object2 = JsonParser.parseString(wf).getAsJsonObject().get("workflow_runs").getAsJsonArray().get(0).getAsJsonObject();
-
-                String jar = HttpUtil.getFromURL(new URL("https://api.github.com/repos/"+owner+"/"+repo+"/actions/runs/"+ object2.get("id").getAsString()+"/artifacts"));
-                MainApp.progressBar2.setProgress(1);
-
-                JsonObject object3 = JsonParser.parseString(jar).getAsJsonObject().get("artifacts").getAsJsonArray().get(0).getAsJsonObject();
-
-                String fileName = object2.get("head_sha").getAsString();
-
-                String downloadLink = object3.get("archive_download_url").getAsString();
-
-                File path = new File(System.getenv("USERPROFILE") + File.separator + ".liquidreflect" + File.separator + "builds" + File.separator + fileName);
-                File clientJar = new File(System.getenv("USERPROFILE") + File.separator + ".liquidreflect" + File.separator + "builds" + File.separator + fileName + ".jar");
-
-                new File(System.getenv("USERPROFILE") + File.separator + ".liquidreflect" + File.separator + "builds").mkdir();
-
-                if(!path.exists()){
-                    logger.info("Nightly update found, Downloading...");
-                    MainApp.progressBar2.setProgress(0);
-
-                    try {
-                        URL url = new URL(downloadLink);
-                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                        connection.setRequestProperty("Authorization", "Bearer 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");
-                        int fileSize = connection.getContentLength();
-                        InputStream in = connection.getInputStream();
-                        FileOutputStream out = new FileOutputStream(path);
-
-                        byte[] buffer = new byte[1024];
-                        int bytesRead;
-                        long totalBytesRead = 0;
-
-                        while ((bytesRead = in.read(buffer)) != -1) {
-                            out.write(buffer, 0, bytesRead);
-                            totalBytesRead += bytesRead;
-
-                            double progress = (double) totalBytesRead / fileSize;
-                            Platform.runLater(() -> MainApp.progressBar2.setProgress(progress));
-                        }
-
-                        in.close();
-                        out.close();
-                        logger.info("Download completed.");
-
-                        MainApp.progressBar2.setVisible(false);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        logger.warn("Download failed: " + e.getMessage());
-                    }
-                }
-
-                MainApp.progressBar1.setProgress(0.1);
-
-                JarFile zipFile = new JarFile(path);
-
-                byte[] sb = readInputStream(zipFile.getInputStream(new JarEntry("LiquidReflect-Build-jar-with-dependencies.jar")));
-
-                FileOutputStream fos = new FileOutputStream(clientJar);
-                fos.write(sb);
-                fos.close();
-
-                client = clientJar;
-            }catch (Exception e){
-                stage.close();
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(null,e.getMessage(),"Failed to Load",JOptionPane.ERROR_MESSAGE);
-                System.exit(1);
-            }
-
-        }else {
-            client = new File(System.getProperty("liquidreflect.client.path"));
-
-            logger.info("Use custom client path.");
-
-            if(!client.exists()){
-                stage.close();
-                JOptionPane.showMessageDialog(null,"Client " + client.getAbsolutePath() + " is not exist.","Failed to Load",JOptionPane.ERROR_MESSAGE);
-                System.exit(1);
-            }
+            client = clientJar;
+        }catch (Exception e){
+            e.printStackTrace();
         }
 
         MainApp.progressBar1.setProgress(0.2);
