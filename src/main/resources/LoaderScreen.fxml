@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+
+<AnchorPane prefHeight="332.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.liquidreflect.fx.LoaderScreen">
+    <ImageView fitHeight="344.0" fitWidth="600.0" pickOnBounds="true">
+        <Image url="background.png"/>
+    </ImageView>
+    <ProgressBar layoutX="200.0" layoutY="227.0" prefWidth="200.0" progress="0.18"
+                 style="-fx-background-radius: 8; -fx-accent: #4F7AFF;"/>
+    <ProgressBar layoutX="200.0" layoutY="256.0" prefWidth="200.0" progress="0.43"
+                 style="-fx-background-radius: 8; -fx-accent: #4F7AFF;"/>
+</AnchorPane>
